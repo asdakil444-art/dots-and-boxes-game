@@ -1,0 +1,60 @@
+# Making Your Game Public with ngrok
+
+## Quick Start
+
+1. **Download ngrok** (if not already done):
+   - Go to: https://ngrok.com/download
+   - Download Windows version
+   - Extract `ngrok.exe` to this folder
+
+2. **Sign up for free** (optional but recommended):
+   - Go to: https://dashboard.ngrok.com/signup
+   - Get your authtoken
+   - Run: `ngrok authtoken YOUR_TOKEN_HERE`
+
+3. **Start the public server**:
+   - Double-click `start-public-server.bat`
+   - Wait for the ngrok URL to appear
+   - Share the URL (looks like: https://abc123.ngrok.io)
+
+## Manual Method
+
+If you prefer to run commands manually:
+
+**Step 1:** Start your game server (in one terminal):
+```bash
+node server.js
+```
+
+**Step 2:** In another terminal, run ngrok:
+```bash
+ngrok http 8080
+```
+
+**Step 3:** Look for the "Forwarding" line in ngrok output:
+```
+Forwarding  https://abc123-def456.ngrok.io -> http://localhost:8080
+```
+
+**Step 4:** Share the https:// URL with anyone!
+
+## Tips
+
+- **Free ngrok URLs expire after 2 hours** and change every time you restart
+- For a permanent URL, you need a paid ngrok plan
+- Anyone with the URL can play your game
+- The URL is secure (https) and encrypted
+
+## Troubleshooting
+
+**"ngrok is not recognized"**
+- Make sure ngrok.exe is in this folder
+- Or add ngrok to your system PATH
+
+**"Failed to complete tunnel connection"**
+- Make sure your server is running on port 8080
+- Check that start-server.bat is working first
+
+**"Rate limit exceeded"**
+- Free accounts have limits
+- Sign up for a free ngrok account to get more bandwidth

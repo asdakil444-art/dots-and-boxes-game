@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dots and Boxes - Customizable</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .settings-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .player-settings {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 200px;
+        }
+
+        .player-settings.player1 {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+        }
+
+        .player-settings.player2 {
+            background: rgba(0, 0, 255, 0.1);
+            border: 2px solid #0000ff;
+        }
+
+        .player-settings h3 {
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+
+        .setting-group label {
+            font-size: 0.9em;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .setting-group input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .setting-group input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .setting-group input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 20px;
+        }
+
+        .player-score {
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+
+        .player-score.active {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .turn-indicator {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .game-board {
+            display: inline-block;
+            position: relative;
+            background: #f5f5f5;
+            padding: 30px;
+            border-radius: 10px;
+        }
+
+        #gameCanvas {
+            display: block;
+            cursor: default;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-new-game {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-new-game:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-apply {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-apply:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .winner-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .winner-modal.show {
+            display: flex;
+        }
+
+        .winner-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            animation: popIn 0.5s ease;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .winner-content h2 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .final-score {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .score-board {
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+
+            .player-score {
+                padding: 10px 15px;
+                font-size: 1.2em;
+                min-width: 120px;
+            }
+
+            .settings-panel {
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .player-settings {
+                width: 100%;
+                min-width: auto;
+            }
+
+            .game-board {
+                padding: 10px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            #gameCanvas {
+                width: 100% !important;
+                height: auto !important;
+                touch-action: none;
+                /* Prevent scrolling while playing */
+            }
+
+            .controls button {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container">
+        <h1>🎮 Dots & Boxes</h1>
+        <p class="subtitle">Connect dots to complete squares!</p>
+
+        <div class="settings-panel">
+            <div class="player-settings player1">
+                <h3>🔴 Player 1</h3>
+                <div class="setting-group">
+                    <label>Team Name:</label>
+                    <input type="text" id="player1Name" value="Red" placeholder="Enter team name">
+                </div>
+                <div class="setting-group">
+                    <label>Color:</label>
+                    <input type="color" id="player1Color" value="#c62828">
+                </div>
+            </div>
+
+            <div class="player-settings player2">
+                <h3>🔵 Player 2</h3>
+                <div class="setting-group">
+                    <label>Team Name:</label>
+                    <input type="text" id="player2Name" value="Blue" placeholder="Enter team name">
+                </div>
+                <div class="setting-group">
+                    <label>Color:</label>
+                    <input type="color" id="player2Color" value="#1565c0">
+                </div>
+            </div>
+        </div>
+
+        <div class="controls" style="margin-bottom: 20px;">
+            <button class="btn-apply" onclick="applySettings()">✓ Apply Changes</button>
+        </div>
+
+        <div class="score-board">
+            <div class="player-score" id="player1Score">
+                <span id="player1DisplayName">Red</span>: <span id="player1ScoreValue">0</span>
+            </div>
+            <div class="player-score" id="player2Score">
+                <span id="player2DisplayName">Blue</span>: <span id="player2ScoreValue">0</span>
+            </div>
+        </div>
+
+        <div class="turn-indicator" id="turnIndicator">
+            Red's Turn
+        </div>
+
+        <div class="game-board">
+            <canvas id="gameCanvas" width="500" height="500" style="width: 500px; height: 500px;"></canvas>
+        </div>
+
+        <div class="controls">
+            <button class="btn-new-game" onclick="resetGame()">🔄 New Game</button>
+        </div>
+    </div>
+
+    <div class="winner-modal" id="winnerModal">
+        <div class="winner-content" id="winnerContent">
+            <h2 id="winnerText">Red Wins!</h2>
+            <p class="final-score" id="finalScore">Red: 25 - Blue: 20</p>
+            <button class="btn-new-game" onclick="resetGame(); closeModal();">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        const GRID_SIZE = 10;
+        const SPACING = 50;
+        const PADDING = 25;
+        const DOT_RADIUS = 6;
+        const LINE_WIDTH = 6;
+        const LINE_HIT_WIDTH = 30; // Increased hit area for touch
+
+        let currentPlayer = 0; // 0 = player1, 1 = player2
+        let scores = [0, 0];
+        let horizontalLines = [];
+        let verticalLines = [];
+        let boxes = [];
+        let canvas, ctx;
+        let hoveredLine = null;
+
+        // Player settings
+        let players = [
+            { name: 'Red', color: '#c62828', bgColor: 'rgba(198, 40, 40, 0.3)' },
+            { name: 'Blue', color: '#1565c0', bgColor: 'rgba(21, 101, 192, 0.3)' }
+        ];
+
+        function initGame() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+
+            // Initialize arrays
+            horizontalLines = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE - 1).fill(null));
+            verticalLines = Array(GRID_SIZE - 1).fill(null).map(() => Array(GRID_SIZE).fill(null));
+            boxes = Array(GRID_SIZE - 1).fill(null).map(() => Array(GRID_SIZE - 1).fill(null));
+
+            // Add event listeners (Mouse & Touch)
+            canvas.addEventListener('mousemove', handleInputMove);
+            canvas.addEventListener('mousedown', handleInputDown);
+            // Touch events
+            canvas.addEventListener('touchstart', handleInputDown, { passive: false });
+            canvas.addEventListener('touchmove', handleInputMove, { passive: false });
+
+            canvas.addEventListener('mouseleave', () => {
+                hoveredLine = null;
+                draw();
+            });
+
+            updateDisplay();
+            draw();
+        }
+
+        function getEventPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            // Handle touch or mouse
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            // Calculate scale
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        function getClosestLine(x, y) {
+            // Check horizontal lines
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE - 1; col++) {
+                    const x1 = PADDING + col * SPACING;
+                    const x2 = PADDING + (col + 1) * SPACING;
+                    const lineY = PADDING + row * SPACING;
+
+                    if (x >= x1 && x <= x2 && Math.abs(y - lineY) < LINE_HIT_WIDTH / 2) {
+                        return { type: 'horizontal', row, col };
+                    }
+                }
+            }
+
+            // Check vertical lines
+            for (let row = 0; row < GRID_SIZE - 1; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    const lineX = PADDING + col * SPACING;
+                    const y1 = PADDING + row * SPACING;
+                    const y2 = PADDING + (row + 1) * SPACING;
+
+                    if (y >= y1 && y <= y2 && Math.abs(x - lineX) < LINE_HIT_WIDTH / 2) {
+                        return { type: 'vertical', row, col };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function handleInputMove(e) {
+            if (e.type === 'touchmove') e.preventDefault(); // Prevent scrolling
+
+            const pos = getEventPos(e);
+            const found = getClosestLine(pos.x, pos.y);
+
+            // Only update hover if line is not already taken
+            let validHover = null;
+            if (found) {
+                const isTaken = found.type === 'horizontal'
+                    ? horizontalLines[found.row][found.col] !== null
+                    : verticalLines[found.row][found.col] !== null;
+                if (!isTaken) {
+                    validHover = found;
+                }
+            }
+
+            if (JSON.stringify(validHover) !== JSON.stringify(hoveredLine)) {
+                hoveredLine = validHover;
+                canvas.style.cursor = validHover ? 'pointer' : 'default';
+                draw();
+            }
+        }
+
+        function handleInputDown(e) {
+            if (e.type === 'touchstart') e.preventDefault();
+
+            const pos = getEventPos(e);
+            const found = getClosestLine(pos.x, pos.y);
+
+            if (found) {
+                makeMove(found.row, found.col, found.type);
+            }
+        }
+
+        function makeMove(row, col, type) {
+            const lineArray = type === 'horizontal' ? horizontalLines : verticalLines;
+
+            if (lineArray[row][col] !== null) return;
+
+            lineArray[row][col] = currentPlayer;
+
+            const completedBoxes = checkForCompletedBoxes(row, col, type);
+
+            if (completedBoxes.length === 0) {
+                switchTurn();
+            } else {
+                completedBoxes.forEach(box => {
+                    boxes[box.row][box.col] = currentPlayer;
+                });
+                scores[currentPlayer] += completedBoxes.length;
+                updateDisplay();
+            }
+
+            hoveredLine = null;
+            draw();
+            checkGameEnd();
+        }
+
+        function checkForCompletedBoxes(row, col, type) {
+            const completed = [];
+
+            if (type === 'horizontal') {
+                // Check box above
+                if (row > 0 && isBoxComplete(row - 1, col)) {
+                    completed.push({ row: row - 1, col: col });
+                }
+                // Check box below
+                if (row < GRID_SIZE - 1 && isBoxComplete(row, col)) {
+                    completed.push({ row: row, col: col });
+                }
+            } else {
+                // Check box to the left
+                if (col > 0 && isBoxComplete(row, col - 1)) {
+                    completed.push({ row: row, col: col - 1 });
+                }
+                // Check box to the right
+                if (col < GRID_SIZE - 1 && isBoxComplete(row, col)) {
+                    completed.push({ row: row, col: col });
+                }
+            }
+
+            return completed;
+        }
+
+        function isBoxComplete(row, col) {
+            if (boxes[row][col] !== null) return false;
+
+            return horizontalLines[row][col] !== null &&
+                horizontalLines[row + 1][col] !== null &&
+                verticalLines[row][col] !== null &&
+                verticalLines[row][col + 1] !== null;
+        }
+
+        function switchTurn() {
+            currentPlayer = currentPlayer === 0 ? 1 : 0;
+            updateTurnIndicator();
+        }
+
+        function updateTurnIndicator() {
+            const indicator = document.getElementById('turnIndicator');
+            const p1Score = document.getElementById('player1Score');
+            const p2Score = document.getElementById('player2Score');
+
+            indicator.textContent = `${players[currentPlayer].name}'s Turn`;
+            indicator.style.backgroundColor = players[currentPlayer].bgColor;
+            indicator.style.color = players[currentPlayer].color;
+
+            if (currentPlayer === 0) {
+                p1Score.classList.add('active');
+                p2Score.classList.remove('active');
+            } else {
+                p2Score.classList.add('active');
+                p1Score.classList.remove('active');
+            }
+        }
+
+        function checkGameEnd() {
+            const totalBoxes = (GRID_SIZE - 1) * (GRID_SIZE - 1);
+            const totalScore = scores[0] + scores[1];
+
+            if (totalScore === totalBoxes) {
+                showWinner();
+            }
+        }
+
+        function showWinner() {
+            const modal = document.getElementById('winnerModal');
+            const content = document.getElementById('winnerContent');
+            const winnerText = document.getElementById('winnerText');
+            const finalScore = document.getElementById('finalScore');
+
+            if (scores[0] > scores[1]) {
+                winnerText.textContent = `🏆 ${players[0].name} Wins!`;
+                winnerText.style.color = players[0].color;
+            } else if (scores[1] > scores[0]) {
+                winnerText.textContent = `🏆 ${players[1].name} Wins!`;
+                winnerText.style.color = players[1].color;
+            } else {
+                winnerText.textContent = '🤝 It\'s a Tie!';
+                winnerText.style.color = '#666';
+            }
+
+            finalScore.textContent = `${players[0].name}: ${scores[0]} - ${players[1].name}: ${scores[1]}`;
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('winnerModal').classList.remove('show');
+        }
+
+        function resetGame() {
+            currentPlayer = 0;
+            scores = [0, 0];
+
+            // Reset arrays
+            horizontalLines = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE - 1).fill(null));
+            verticalLines = Array(GRID_SIZE - 1).fill(null).map(() => Array(GRID_SIZE).fill(null));
+            boxes = Array(GRID_SIZE - 1).fill(null).map(() => Array(GRID_SIZE - 1).fill(null));
+
+            hoveredLine = null;
+            updateDisplay();
+            draw();
+            closeModal();
+        }
+
+        // Initialize
+        initGame();
+    </script>
+</body>
+
+</html>
